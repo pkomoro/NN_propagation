@@ -8,6 +8,7 @@ dist/
 
 # outputs
 *.png
+*.bmp
 
 #environments and IDE configs
 env/
