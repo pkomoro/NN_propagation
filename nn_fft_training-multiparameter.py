@@ -136,7 +136,7 @@ if __name__ == "__main__":
         [LightField(target, phase, params.wavelength, params.pixel_size)]*kernels_number,
         kernels,
         params.distance,
-        iterations=100,
+        iterations=2000,
     )
 
 

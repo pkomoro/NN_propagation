@@ -12,7 +12,7 @@ from keras.layers import Convolution2D
 from scipy import signal
 from tensorflow import keras
 
-from lightprop.calculations import H_off_axis
+from lightprop.calculations import H_off_axis, H_on_axis
 from lightprop.lightfield import LightField
 from lightprop.propagation.keras_layers import (
     Aexp,
