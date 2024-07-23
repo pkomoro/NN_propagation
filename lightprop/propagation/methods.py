@@ -11,8 +11,11 @@ import numpy as np
 from keras.layers import Convolution2D
 from scipy import signal
 from tensorflow import keras
+import tensorflow as tf
+from matplotlib import pyplot as plt
 
-from lightprop.calculations import H_off_axis, H_on_axis
+
+from lightprop.calculations import H_off_axis, H_on_axis, h
 from lightprop.lightfield import LightField
 from lightprop.propagation.keras_layers import (
     Aexp,
@@ -25,6 +28,35 @@ from lightprop.propagation.keras_layers import (
 
 
 class ConvolutionPropagation:
+    def calculate_kernel(self, distance, wavelength, matrix_size, pixel_size):
+        hkernel = np.array(
+            [
+                [
+                    # H_off_axis(
+                    #     x / np.sqrt(x**2 + distance**2) / wavelength,
+                    #     y / np.sqrt(distance**2 + y**2) / wavelength,
+                    #     distance,
+                    #     wavelength,
+                    # )
+                    h(np.sqrt(x**2 + y**2), distance, wavelength)
+                    for x in np.arange(-matrix_size / 2, matrix_size / 2) * pixel_size
+                ]
+                for y in np.arange(-matrix_size / 2, matrix_size / 2) * pixel_size
+            ]
+        )
+        return hkernel
+
+    def propagate(self, propagation_input: LightField, distance: float) -> LightField:
+        logging.info("Calculating propagation")
+        field_distribution = propagation_input.get_complex_field()
+        kernel = self.calculate_kernel(
+            distance, propagation_input.wavelength, propagation_input.matrix_size, propagation_input.pixel
+        )
+        output = signal.fftconvolve(field_distribution, kernel, mode="same")
+        return LightField.from_complex_array(output, propagation_input.wavelength, propagation_input.pixel)
+
+
+class FFTPropagation:
     def calculate_kernel(self, distance, wavelength, matrix_size, pixel_size):
         hkernel = np.array(
             [
@@ -48,7 +80,48 @@ class ConvolutionPropagation:
         kernel = self.calculate_kernel(
             distance, propagation_input.wavelength, propagation_input.matrix_size, propagation_input.pixel
         )
-        output = signal.fftconvolve(field_distribution, kernel, mode="same")
+        # kernel = tf.cast(tf.signal.fftshift(kernel), tf.complex64)
+
+        figure, axis = plt.subplots(1, 2) 
+        axis[0].imshow(np.abs(kernel), interpolation="nearest")
+        axis[1].imshow(np.angle(kernel), interpolation="nearest")
+        plt.show()
+
+        output = tf.signal.fft2d(field_distribution)
+
+        figure, axis = plt.subplots(1, 2) 
+        axis[0].imshow(np.abs(output), interpolation="nearest")
+        axis[1].imshow(np.angle(output), interpolation="nearest")
+        plt.show()
+        
+        output = tf.cast(tf.signal.fftshift(output), tf.complex64)
+
+        figure, axis = plt.subplots(1, 2) 
+        axis[0].imshow(np.abs(output), interpolation="nearest")
+        axis[1].imshow(np.angle(output), interpolation="nearest")
+        plt.show()
+
+        output = np.multiply(output, kernel)
+
+        figure, axis = plt.subplots(1, 2) 
+        axis[0].imshow(np.abs(output), interpolation="nearest")
+        axis[1].imshow(np.angle(output), interpolation="nearest")
+        plt.show()
+
+        # output = tf.cast(tf.signal.fftshift(output), tf.complex64)
+
+        # figure, axis = plt.subplots(1, 2) 
+        # axis[0].imshow(np.abs(output), interpolation="nearest")
+        # axis[1].imshow(np.angle(output), interpolation="nearest")
+        # plt.show()
+
+        output = tf.signal.ifft2d(output)
+
+        figure, axis = plt.subplots(1, 2) 
+        axis[0].imshow(np.abs(output), interpolation="nearest")
+        axis[1].imshow(np.angle(output), interpolation="nearest")
+        plt.show()
+
         return LightField.from_complex_array(output, propagation_input.wavelength, propagation_input.pixel)
 
 

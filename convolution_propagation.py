@@ -27,7 +27,7 @@ if __name__ == "__main__":
     # Choose proper propagation parameters
     params.beam_diameter = 2
     params.matrix_size = 1024
-    params.pixel_size = 0.1
+    params.pixel_size = 0.2
 
 
     params.wavelength = PropagationParams.get_wavelength_from_nu(180)
@@ -41,37 +41,48 @@ if __name__ == "__main__":
 
     # Import phase map of the structure
     
-    image = Image.open("outs/Structure_22.07.2024-12_21_03.bmp")
+    # image = Image.open("outs/Structure_23.07.2024-10_45_09.bmp")
     
-    # convert image to numpy array
-    data = np.asarray(image)[:,:,0]
+    # # convert image to numpy array
+    # phase = np.asarray(image)[:,:,0]
 
-    data=data/255
-    data=data*2
-    data=data*np.pi
+    # phase=phase/255
+    # phase=phase*2
+    # phase=phase*np.pi
 
-    data = np.mod(get_lens_distribution(params),2*np.pi)
+    params.focal_length = 120
+    params.distance = params.focal_length
+    phase = np.mod(get_lens_distribution(params),2*np.pi)
 
-
+    
     # plt.imshow(amp, interpolation="nearest")
     # plt.show()
-
+    
+    # plt.imshow(phase, interpolation="nearest")
+    # plt.show()
+        
     # propagate field
 
-    kernel = prop.ConvolutionPropagation().calculate_kernel(
-            params.distance, params.wavelength, params.matrix_size, params.pixel_size
-        )
+    # kernel = prop.FFTPropagation().calculate_kernel(
+    #         params.distance, params.wavelength, params.matrix_size, params.pixel_size
+    #     )
     
-    plt.imshow(np.angle(kernel), interpolation="nearest")
-    plt.show()
+    # plt.imshow(np.angle(kernel), interpolation="nearest")
+    # plt.show()
 
-    field = LightField(amp, data, params.wavelength, params.pixel_size)
 
-    result = prop.ConvolutionPropagation().propagate(field, params.distance)
+    field = LightField(amp, phase, params.wavelength, params.pixel_size)
+
+
+    result = prop.FFTPropagation().propagate(field, params.distance)
 
     # show results
     current_datetime = datetime.now()
     str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
+
+
+    plotter = Plotter1(field)
+    plotter.save_output_amplitude("outs/Input_" + str_current_datetime + ".bmp")
 
     plotter = Plotter1(result)
     plotter.save_output_amplitude("outs/Result_" + str_current_datetime + ".bmp")

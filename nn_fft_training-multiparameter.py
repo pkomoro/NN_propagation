@@ -3,7 +3,7 @@ from datetime import datetime
 
 import numpy as np
 
-from lightprop.calculations import H_off_axis, get_gaussian_distribution
+from lightprop.calculations import H_off_axis, H_on_axis, get_gaussian_distribution
 from lightprop.lightfield import LightField
 from lightprop.optimization.nn import NN_FFTTrainer
 from lightprop.propagation.params import PropagationParams
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         kernels[i]=np.array(
             [
                 [
-                    H_off_axis(
+                    H_on_axis(
                         x / np.sqrt(x**2 + params.distance**2) / params.wavelength,
                         y / np.sqrt(params.distance**2 + y**2) / params.wavelength,
                         params.distance,
