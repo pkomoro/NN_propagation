@@ -26,8 +26,8 @@ if __name__ == "__main__":
 
     # Choose proper propagation parameters
     params.beam_diameter = 2
-    params.matrix_size = 1024
-    params.pixel_size = 0.2
+    params.matrix_size = 512
+    params.pixel_size = 1.5
 
 
     params.wavelength = PropagationParams.get_wavelength_from_nu(180)
@@ -50,10 +50,39 @@ if __name__ == "__main__":
     # phase=phase*2
     # phase=phase*np.pi
 
-    params.focal_length = 120
+    params.focal_length = 200
     params.distance = params.focal_length
     phase = np.mod(get_lens_distribution(params),2*np.pi)
 
+    # phase = np.array(
+    #         [
+    #             [
+    #                 0
+    #                 for x in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
+    #             ]
+    #             for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
+    #         ]
+    #     )
+
+
+    # def aperture(x,y,r):
+    #     if np.sqrt(x**2+y**2) < 50:
+    #         value=1
+    #     else:
+    #         value=0
+    #     return value
+    
+    
+
+    # amp = np.array(
+    #         [
+    #             [
+    #                 aperture(x,y,50)
+    #                 for x in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
+    #             ]
+    #             for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
+    #         ]
+    #     )
     
     # plt.imshow(amp, interpolation="nearest")
     # plt.show()
