@@ -9,13 +9,15 @@ from lightprop.optimization.nn import NN_FFTTrainer
 from lightprop.propagation.params import PropagationParams
 from lightprop.visualisation import Plotter, Plotter1, PlotTypes
 
+from matplotlib import pyplot as plt
+
 if __name__ == "__main__":
     params = PropagationParams.get_example_propagation_data()
 
     # Choose proper propagation parameters
     params.beam_diameter = 2
-    params.matrix_size = 1024
-    params.pixel_size = 0.1
+    params.matrix_size = 256
+    params.pixel_size = 1.8
     # Define target optical field and input amplitude
     # In this example a simple focusing from wider Gaussian beam to the thinner one
     x0 = 0
@@ -29,7 +31,7 @@ if __name__ == "__main__":
         )
     plotter.save_output_amplitude("outs/Target_" + str_current_datetime + ".bmp")
 
-    params.beam_diameter = 15
+    params.beam_diameter = 30
     amp = get_gaussian_distribution(params, 0, 0)
     phase = np.array(
         [
@@ -57,17 +59,17 @@ if __name__ == "__main__":
     wavelength_stop=PropagationParams.get_wavelength_from_nu(180)
 
     wavelength_step=(wavelength_stop-wavelength_start)/(kernels_number-1)
-    kernels=[None]*kernels_number
+    kernels = [np.empty([params.matrix_size,params.matrix_size], dtype="complex64")]*kernels_number 
+    kernels_shifted = [np.empty([params.matrix_size,params.matrix_size], dtype="complex64")]*kernels_number
 
-    params.wavelength=wavelength_start
 
     for i in range(len(kernels)):
         kernels[i]=np.array(
             [
                 [
-                    H_on_axis(
-                        x / np.sqrt(x**2 + params.distance**2) / params.wavelength,
-                        y / np.sqrt(params.distance**2 + y**2) / params.wavelength,
+                    H_off_axis(
+                        x / params.pixel_size / params.pixel_size / params.matrix_size,
+                        y / params.pixel_size / params.pixel_size / params.matrix_size,
                         params.distance,
                         params.wavelength,
                     )
@@ -76,67 +78,30 @@ if __name__ == "__main__":
                 for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
             ]
         )
-        kernels[i]=LightField.from_complex_array(kernels[i], params.wavelength, params.pixel_size)
+        kernels_shifted[i] = np.array(np.roll(kernels[i], (int(params.matrix_size/2), int(params.matrix_size/2)), axis = (0,1)))
 
+        
+        kernels[i]=LightField.from_complex_array(kernels[i], params.wavelength, params.pixel_size)
+        kernels_shifted[i]=LightField.from_complex_array(kernels_shifted[i], params.wavelength, params.pixel_size)
+        
         params.wavelength+=wavelength_step
 
+    # figure, axis = plt.subplots(1, 2) 
+    # axis[0].imshow(kernels[0].get_amplitude(), interpolation="nearest")
+    # axis[1].imshow(kernels[0].get_phase(), interpolation="nearest")
+    # plt.show()
 
-    # kernel1 = np.array(
-    #     [
-    #         [
-    #             H_off_axis(
-    #                 x / np.sqrt(x**2 + params.distance**2) / params.wavelength,
-    #                 y / np.sqrt(params.distance**2 + y**2) / params.wavelength,
-    #                 params.distance,
-    #                 params.wavelength,
-    #             )
-    #             for x in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
-    #         ]
-    #         for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
-    #     ]
-    # )
-
-    # params.wavelength *= 1.1
-    # kernel2 = np.array(
-    #     [
-    #         [
-    #             H_off_axis(
-    #                 x / np.sqrt(x**2 + params.distance**2) / params.wavelength,
-    #                 y / np.sqrt(params.distance**2 + y**2) / params.wavelength,
-    #                 params.distance,
-    #                 params.wavelength,
-    #             )
-    #             for x in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
-    #         ]
-    #         for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
-    #     ]
-    # )
-
-    # trained_model = NN.optimize(
-    #     [
-    #         LightField(amp, phase, params.wavelength, params.pixel_size),
-    #         LightField(amp, phase, params.wavelength, params.pixel_size),
-    #     ],
-    #     [
-    #         LightField(target, phase, params.wavelength, params.pixel_size),
-    #         LightField(target, phase, params.wavelength, params.pixel_size),
-    #     ],
-    #     [
-    #         LightField.from_complex_array(kernel1, params.wavelength, params.pixel_size),
-    #         LightField.from_complex_array(kernel2, params.wavelength, params.pixel_size),
-    #     ],
-    #     params.distance,
-    #     iterations=100,
-    # )
-
-  
+    # figure, axis = plt.subplots(1, 2) 
+    # axis[0].imshow(kernels_shifted[1].get_amplitude(), interpolation="nearest")
+    # axis[1].imshow(kernels_shifted[1].get_phase(), interpolation="nearest")
+    # plt.show()
 
     trained_model = NN.optimize(
         [LightField(amp, phase, params.wavelength, params.pixel_size)]*kernels_number,
         [LightField(target, phase, params.wavelength, params.pixel_size)]*kernels_number,
-        kernels,
+        kernels_shifted,
         params.distance,
-        iterations=2000,
+        iterations=5,
     )
 
 

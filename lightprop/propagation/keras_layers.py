@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 from keras import backend as K
 from tensorflow import keras
 
@@ -95,7 +96,18 @@ class FFTConvolve(keras.layers.Layer):
         self.ComplexKernel = kernel[:, 0] * K.exp(1j * kernel[:, 1])
 
         self.ComplexField = tf.signal.fft2d(self.ComplexField)
+        # self.ComplexField = tf.signal.fftshift(self.ComplexField)
+        # self.ComplexField = tf.cast(self.ComplexField, tf.complex64)
+
+        
+        # print(tf.shape(self.ComplexField))
+
+        # self.ComplexField = tf.roll(self.ComplexField, shift = [128, 128], axis = [1,2])
+
         self.ComplexField *= self.ComplexKernel
+
+        # self.ComplexField = tf.roll(self.ComplexField, shift = [128, 128], axis = [1,2])
+
         self.ComplexField = tf.signal.ifft2d(self.ComplexField)
 
         return K.concatenate([K.abs(self.ComplexField), tf.math.angle(self.ComplexField)], axis=1)

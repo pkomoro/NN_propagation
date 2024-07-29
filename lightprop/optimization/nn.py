@@ -32,8 +32,12 @@ class NNTrainer:
         self.model = propagator.set_kernels(self.model, input_field, distance)
 
         self.log.info("Compiling model...")
+        lr_schedule = keras.optimizers.schedules.ExponentialDecay(
+            initial_learning_rate=1e-1,
+            decay_steps=1000,
+            decay_rate=0.9)
         self.model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=1e-1),
+            optimizer=keras.optimizers.Adam(learning_rate=1e-6, clipnorm=1),
             loss=self.intensityMSE,
         )
 
