@@ -3,7 +3,7 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
+import keras
 
 import lightprop.propagation.methods as prop
 from lightprop.lightfield import LightField
@@ -111,11 +111,11 @@ class NN_FFTTrainer(NNTrainer):
 
         self.log.info("Compiling model...")
         self.model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=1e-1),
+            optimizer=keras.optimizers.AdamW(learning_rate=1e-3, clipvalue=1),
             loss=self.amplitudeMSE,
         )
 
-        checkpoint_filepath = "./tmp/checkpoint"
+        checkpoint_filepath = "./tmp/checkpoint.weights.h5"
         self.log.info(f"Setting up checkpoint at {checkpoint_filepath}...")
         model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_filepath, save_weights_only=True, monitor="loss", mode="min", save_best_only=True

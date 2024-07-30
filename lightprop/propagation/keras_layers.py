@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from keras import backend as K
-from tensorflow import keras
+import keras
 
 
 class Aexp(keras.layers.Layer):
@@ -9,9 +8,9 @@ class Aexp(keras.layers.Layer):
         super().__init__(**kwargs)
 
     def call(self, inputs):
-        self.A = K.sqrt(K.square(inputs[:, 0]) + K.square(inputs[:, 1]))
+        self.A = keras.ops.sqrt(keras.ops.square(inputs[:, 0]) + keras.ops.square(inputs[:, 1]))
         self.phi = tf.math.atan2(inputs[:, 1], inputs[:, 0])
-        return K.concatenate([self.A, self.phi], axis=1)
+        return keras.ops.concatenate([self.A, self.phi], axis=1)
 
 
 class ReIm_convert(keras.layers.Layer):
@@ -22,7 +21,7 @@ class ReIm_convert(keras.layers.Layer):
         self.Re = inputs[:, 0] * K.cos(inputs[:, 1])
         self.Im = inputs[:, 0] * K.sin(inputs[:, 1])
 
-        return K.concatenate([self.Re, self.Im], axis=1)
+        return keras.ops.concatenate([self.Re, self.Im], axis=1)
 
 
 class Complex_from_Aexp(keras.layers.Layer):
@@ -61,7 +60,7 @@ class Structure(keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs):
-        return K.concatenate([inputs[:, 0], inputs[:, 1] + self.kernel], axis=1)
+        return keras.ops.concatenate([inputs[:, 0], inputs[:, 1] + self.kernel], axis=1)
 
 
 class Convolve(keras.layers.Layer):
@@ -92,8 +91,8 @@ class FFTConvolve(keras.layers.Layer):
         field = tf.cast(data[0], tf.complex64)
         kernel = tf.cast(data[1], tf.complex64)
 
-        self.ComplexField = field[:, 0] * K.exp(1j * field[:, 1])
-        self.ComplexKernel = kernel[:, 0] * K.exp(1j * kernel[:, 1])
+        self.ComplexField = field[:, 0] * keras.ops.exp(1j * field[:, 1])
+        self.ComplexKernel = kernel[:, 0] * keras.ops.exp(1j * kernel[:, 1])
 
         self.ComplexField = tf.signal.fft2d(self.ComplexField)
         # self.ComplexField = tf.signal.fftshift(self.ComplexField)
@@ -110,4 +109,7 @@ class FFTConvolve(keras.layers.Layer):
 
         self.ComplexField = tf.signal.ifft2d(self.ComplexField)
 
-        return K.concatenate([K.abs(self.ComplexField), tf.math.angle(self.ComplexField)], axis=1)
+        return keras.ops.concatenate([keras.ops.abs(self.ComplexField), tf.math.angle(self.ComplexField)], axis=1)
+    
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0][0], 2, input_shape[0][2], input_shape[0][2])

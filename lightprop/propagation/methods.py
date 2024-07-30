@@ -8,10 +8,12 @@ pawel.komorowski@wat.edu.pl
 import logging
 
 import numpy as np
-from keras.layers import Convolution2D
+
 from scipy import signal
-from tensorflow import keras
+import keras
 import tensorflow as tf
+
+from keras.layers import Convolution2D
 
 
 
@@ -278,7 +280,7 @@ class MultiparameterNNPropagation_FFTConv(NNPropagation):
 
     def build_model(self, matrix_size: int):
         inputField = keras.Input(shape=(2, matrix_size, matrix_size))
-        Kernel = keras.Input(shape=(2, matrix_size, matrix_size), batch_size=1)
+        Kernel = keras.Input(shape=(2, matrix_size, matrix_size))
 
         x = Aexp()(inputField)
         x = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
