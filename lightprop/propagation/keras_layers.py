@@ -3,6 +3,7 @@ import numpy as np
 from keras import backend as K
 from tensorflow import keras
 
+from matplotlib import pyplot as plt
 
 class Aexp(keras.layers.Layer):
     def __init__(self, **kwargs):
@@ -98,8 +99,19 @@ class FFTConvolve(keras.layers.Layer):
         self.ComplexField = tf.signal.fft2d(self.ComplexField)
         # self.ComplexField = tf.signal.fftshift(self.ComplexField)
         # self.ComplexField = tf.cast(self.ComplexField, tf.complex64)
-
         
+        # vis_data = self.ComplexField
+        
+        # print(tf.shape(vis_data))
+        # print(tf.make_ndarray(vis_data))
+
+
+
+
+        # figure, axis = plt.subplots(1, 2) 
+        # axis[0].imshow(tf.abs(self.ComplexField[0],[0]), interpolation="nearest")
+        # axis[1].imshow(tf.math.angle(self.ComplexField[0],[0]), interpolation="nearest")
+        # plt.show()
         # print(tf.shape(self.ComplexField))
 
         # self.ComplexField = tf.roll(self.ComplexField, shift = [128, 128], axis = [1,2])

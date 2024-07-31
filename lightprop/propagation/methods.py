@@ -81,9 +81,11 @@ class FFTPropagation:
             distance, propagation_input.wavelength, propagation_input.matrix_size, propagation_input.pixel
         )
         
+        kernel = tf.cast(tf.signal.fftshift(kernel), tf.complex64)
+
         output = tf.signal.fft2d(field_distribution)
         
-        output = tf.cast(tf.signal.fftshift(output), tf.complex64)
+        # output = tf.cast(tf.signal.fftshift(output), tf.complex64)
   
         output = np.multiply(output, kernel)
 

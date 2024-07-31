@@ -3,11 +3,12 @@ from datetime import datetime
 
 import numpy as np
 
-from lightprop.calculations import H_off_axis, H_on_axis, get_gaussian_distribution
+from lightprop.calculations import H_off_axis, H_on_axis, get_gaussian_distribution, get_lens_distribution
 from lightprop.lightfield import LightField
 from lightprop.optimization.nn import NN_FFTTrainer
 from lightprop.propagation.params import PropagationParams
 from lightprop.visualisation import Plotter, Plotter1, PlotTypes
+import tensorflow as tf
 
 from matplotlib import pyplot as plt
 
@@ -15,9 +16,11 @@ if __name__ == "__main__":
     params = PropagationParams.get_example_propagation_data()
 
     # Choose proper propagation parameters
-    params.beam_diameter = 2
+    params.beam_diameter = 4
     params.matrix_size = 256
     params.pixel_size = 1.8
+    params.wavelength = PropagationParams.get_wavelength_from_nu(180)
+
     # Define target optical field and input amplitude
     # In this example a simple focusing from wider Gaussian beam to the thinner one
     x0 = 0
@@ -29,7 +32,8 @@ if __name__ == "__main__":
     plotter = Plotter1(
         LightField.from_complex_array(target, params.wavelength, params.pixel_size)
         )
-    plotter.save_output_amplitude("outs/Target_" + str_current_datetime + ".bmp")
+    # plotter.save_output_amplitude("outs/Target_" + str_current_datetime + ".bmp")
+    plotter.save_output_amplitude("outs/Target.bmp")
 
     params.beam_diameter = 30
     amp = get_gaussian_distribution(params, 0, 0)
@@ -43,10 +47,12 @@ if __name__ == "__main__":
     plotter = Plotter1(
         LightField.from_complex_array(amp, params.wavelength, params.pixel_size)
         )
-    plotter.save_output_amplitude("outs/Input_" + str_current_datetime + ".bmp")
+    # plotter.save_output_amplitude("outs/Input_" + str_current_datetime + ".bmp")
+    plotter.save_output_amplitude("outs/Input.bmp")
 
     # Build NNTrainer or NNMultiTrainer
     NN = NN_FFTTrainer()
+
 
     # Run NN optimization
     # In case of NNMultiTrainer provide kernel as 3rd argument.
@@ -104,10 +110,17 @@ if __name__ == "__main__":
         iterations=5,
     )
 
-
+    
 
     # Plot loss vs epochs
     NN.plot_loss()
+
+    
+    weights = trained_model.layers[3].get_weights() 
+    weights[0]=get_lens_distribution(params) 
+    trained_model.layers[3].set_weights(weights)
+
+    
 
     # Extract the optimized phase map from the trainable layer
     optimized_phase = np.array(trained_model.layers[3].get_weights()[0])
@@ -115,11 +128,11 @@ if __name__ == "__main__":
     current_datetime = datetime.now()
     str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
 
-    
     plotter = Plotter1(
         LightField(amp, optimized_phase, params.wavelength, params.pixel_size)
     )
-    plotter.save_output_phase("outs/Structure_" + str_current_datetime + ".bmp")
+    # plotter.save_output_phase("outs/Structure_" + str_current_datetime + ".bmp")
+    plotter.save_output_phase("outs/Structure.bmp")
 
     # # Plot the target amplitude
     # plotter = Plotter(LightField(target, phase, params.wavelength, params.pixel_size), output_type=PlotTypes.ABS)
@@ -166,34 +179,9 @@ if __name__ == "__main__":
         plotter = Plotter1(
         LightField.from_complex_array(result, params.wavelength, params.pixel_size)
         )
-        plotter.save_output_amplitude("outs/Result_" + str(i) + "_" + str_current_datetime + ".bmp")
+        # plotter.save_output_amplitude("outs/Result_" + str(i) + "_" + str_current_datetime + ".bmp")
+        plotter.save_output_amplitude("outs/ResultNN.bmp")
 
         params.wavelength+=wavelength_step
 
-
-    # time.sleep(1)
-
-    # current_datetime = datetime.now()
-    # str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
-
-    # kernel = np.array([np.real(kernel2), np.imag(kernel2)])
-    # kernel = kernel.reshape(
-    #     (
-    #         1,
-    #         2,
-    #         params.matrix_size,
-    #         params.matrix_size,
-    #     ),
-    #     order="F",
-    # )
-
-    # # Evaluate model on the input field
-    # result = trained_model([field, kernel]).numpy()
-    # result = result[0, 0, :, :] * np.exp(1j * result[0, 1, :, :])
-
-    # # Plot the result
-    # plotter = Plotter1(
-    #     LightField.from_complex_array(result, params.wavelength, params.pixel_size)
-    # )
-    # plotter.save_output_amplitude("outs/Result_" + str_current_datetime + ".bmp")
 

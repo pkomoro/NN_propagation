@@ -37,7 +37,7 @@ class NNTrainer:
             decay_steps=1000,
             decay_rate=0.9)
         self.model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=1e-6, clipnorm=1),
+            optimizer=keras.optimizers.Adam(),
             loss=self.intensityMSE,
         )
 
@@ -111,8 +111,8 @@ class NN_FFTTrainer(NNTrainer):
 
         self.log.info("Compiling model...")
         self.model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=1e-1),
-            loss=self.amplitudeMSE,
+            optimizer=keras.optimizers.Adam(learning_rate=1e-3, clipnorm = 1),
+            loss=keras.losses.MeanSquaredError(),
         )
 
         checkpoint_filepath = "./tmp/checkpoint"

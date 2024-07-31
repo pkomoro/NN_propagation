@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # Import phase map of the structure
     
-    image = Image.open("outs/Structure_29.07.2024-14_28_48.bmp")
+    image = Image.open("outs/Structure.bmp")
     
     # convert image to numpy array
     phase = np.asarray(image)[:,:,0]
@@ -72,4 +72,5 @@ if __name__ == "__main__":
     # plotter.save_output_amplitude("outs/Input_" + str_current_datetime + ".bmp")
 
     plotter = Plotter1(result)
-    plotter.save_output_amplitude("outs/Result_" + str_current_datetime + ".bmp")
+    # plotter.save_output_amplitude("outs/Result_" + str_current_datetime + ".bmp")
+    plotter.save_output_amplitude("outs/Result.bmp")
