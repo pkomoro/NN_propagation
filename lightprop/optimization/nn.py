@@ -104,14 +104,13 @@ class NNMultiTrainer(NNTrainer):
 
 class NN_FFTTrainer(NNTrainer):
     def optimize(
-        self, input_field: LightField, target_field: LightField, kernel: LightField, distance, iterations: int = 100
-    ):
+        self, input_field: LightField, target_field: LightField, kernel: LightField, phase_map, iterations: int = 100):
         propagator = prop.MultiparameterNNPropagation_FFTConv()
-        self.model = propagator.build_model(input_field[0].matrix_size)
+        self.model = propagator.build_model(input_field[0].matrix_size, phase_map)
 
         self.log.info("Compiling model...")
         self.model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=1e-3, clipnorm = 1),
+            optimizer=keras.optimizers.Adam(learning_rate=4e-4),
             loss=keras.losses.MeanSquaredError(),
         )
 

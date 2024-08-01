@@ -15,7 +15,7 @@ import tensorflow as tf
 
 
 
-from lightprop.calculations import H_off_axis, H_on_axis, h
+from lightprop.calculations import H_off_axis, H_on_axis, h, get_lens_distribution
 from lightprop.lightfield import LightField
 from lightprop.propagation.keras_layers import (
     Aexp,
@@ -268,24 +268,38 @@ class MultiparameterNNPropagation(NNPropagation):
         return model
 
 
+class custom_initializer(tf.keras.initializers.Initializer):
+
+    def __init__(self, phase_map):
+        self.phase_map = phase_map
+
+    def __call__(self, shape, dtype=None, **kwargs):
+               
+        return tf.convert_to_tensor(self.phase_map, dtype)
+
 class MultiparameterNNPropagation_FFTConv(NNPropagation):
-    def propagate(self, propagation_input: LightField, kernel: LightField) -> LightField:
+    def propagate(self, propagation_input: LightField, kernel: LightField, phase_map) -> LightField:
         logging.info("Calculating propagation")
         field_distribution = map(self.prepare_input_field, propagation_input)
-        model = self.build_model(propagation_input.matrix_size)
+        model = self.build_model(propagation_input.matrix_size, phase_map)
         conv = model(field_distribution, kernel).numpy()
         return LightField.from_re_im(
             conv[0, 0, :, :], conv[0, 1, :, :], propagation_input.wavelength, propagation_input.pixel
         )
+    
+    # def custom_initializer(shape, dtype=None):
+    #     return tf.convert_to_tensor(np.ones(shape), dtype=tf.dtypes.float64)
 
-    def build_model(self, matrix_size: int):
+    def build_model(self, matrix_size: int, phase_map):
         inputField = keras.Input(shape=(2, matrix_size, matrix_size))
-        Kernel = keras.Input(shape=(2, matrix_size, matrix_size), batch_size=1)
+        # Kernel = keras.Input(shape=(2, matrix_size, matrix_size), batch_size=1)
+        Kernel = keras.Input(shape=(2, matrix_size, matrix_size))
+
 
         x = Aexp()(inputField)
         x = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
 
-        x = Structure(kernel_initializer=keras.initializers.Zeros())(x)
+        x = Structure(kernel_initializer=custom_initializer(phase_map))(x)
         x = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
 
         x = FFTConvolve()([x, Kernel])

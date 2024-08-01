@@ -9,11 +9,10 @@ class ParamsValidationException(Exception):
 class PropagationParams:
     c = 299792458
 
-    def __init__(self, matrix_size, nu, beam_diameter, focal_length, distance, pixel_size, wavelength=None):
+    def __init__(self, matrix_size, beam_diameter, focal_length, distance, pixel_size, wavelength):
         """
         Validates and converts propagation params.
         :param matrix_size: number of pixels on the side of square calculation matrix_size
-        :param nu: frequency in [GHz]
         :param beam_diameter: sigma parameter of Gaussian beam in [mm]
         :param focal_length: focusing distance in [mm]
         :param distance: propagation distance in [mm]
@@ -22,9 +21,6 @@ class PropagationParams:
         """
         logging.info("Loading propagation params")
         self.matrix_size = matrix_size
-        self.nu = nu
-        if not wavelength:
-            wavelength = PropagationParams.get_wavelength_from_nu(self.nu)
         self.wavelength = wavelength
         self.beam_diameter = beam_diameter
         self.focal_length = focal_length
@@ -42,14 +38,7 @@ class PropagationParams:
     def matrix_size(self, size):
         self._matrix_size = self._positive_integer_validator(size)
 
-    @property
-    def nu(self):
-        return self._nu
-
-    @nu.setter
-    def nu(self, value):
-        self._nu = self._positive_float_validator(value)
-
+    
     @property
     def wavelength(self):
         return self._wavelength
@@ -109,15 +98,14 @@ class PropagationParams:
             raise ParamsValidationException(f"{value} cannot be converted to {expected_type}")
 
     @staticmethod
-    def get_wavelength_from_nu(nu):
+    def get_wavelength_from_frequency(nu):
         return PropagationParams.c / nu * 10**-6
 
     @classmethod
     def get_example_propagation_data(cls):
         data = {
             "matrix_size": 128,
-            "nu": 140,
-            "wavelength": PropagationParams.get_wavelength_from_nu(140),
+            "wavelength": PropagationParams.get_wavelength_from_frequency(140),
             "beam_diameter": 20,
             "focal_length": 500,
             "distance": 500,

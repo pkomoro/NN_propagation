@@ -30,7 +30,7 @@ if __name__ == "__main__":
     params.pixel_size = 1.8
 
 
-    params.wavelength = PropagationParams.get_wavelength_from_nu(180)
+    params.wavelength = PropagationParams.get_wavelength_from_frequency(180)
 
     
     # Define input amplitude

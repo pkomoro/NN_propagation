@@ -19,7 +19,7 @@ if __name__ == "__main__":
     params.beam_diameter = 4
     params.matrix_size = 256
     params.pixel_size = 1.8
-    params.wavelength = PropagationParams.get_wavelength_from_nu(180)
+    params.wavelength = PropagationParams.get_wavelength_from_frequency(180)
 
     # Define target optical field and input amplitude
     # In this example a simple focusing from wider Gaussian beam to the thinner one
@@ -32,8 +32,8 @@ if __name__ == "__main__":
     plotter = Plotter1(
         LightField.from_complex_array(target, params.wavelength, params.pixel_size)
         )
-    # plotter.save_output_amplitude("outs/Target_" + str_current_datetime + ".bmp")
-    plotter.save_output_amplitude("outs/Target.bmp")
+    plotter.save_output_amplitude("outs/Target_" + str_current_datetime + ".bmp")
+    # plotter.save_output_amplitude("outs/Target.bmp")
 
     params.beam_diameter = 30
     amp = get_gaussian_distribution(params, 0, 0)
@@ -47,33 +47,33 @@ if __name__ == "__main__":
     plotter = Plotter1(
         LightField.from_complex_array(amp, params.wavelength, params.pixel_size)
         )
-    # plotter.save_output_amplitude("outs/Input_" + str_current_datetime + ".bmp")
-    plotter.save_output_amplitude("outs/Input.bmp")
+    plotter.save_output_amplitude("outs/Input_" + str_current_datetime + ".bmp")
+    # plotter.save_output_amplitude("outs/Input.bmp")
 
     # Build NNTrainer or NNMultiTrainer
     NN = NN_FFTTrainer()
 
-
+    
     # Run NN optimization
     # In case of NNMultiTrainer provide kernel as 3rd argument.
     # Please try running different numbers of iterations (last parameter)
     # Check the difference in the output for different amounts of training
 
 
-    kernels_number=2
-    wavelength_start=PropagationParams.get_wavelength_from_nu(180)
-    wavelength_stop=PropagationParams.get_wavelength_from_nu(180)
+    kernels_number=11
+    wavelength_start=PropagationParams.get_wavelength_from_frequency(170)
+    wavelength_stop=PropagationParams.get_wavelength_from_frequency(180)
 
     wavelength_step=(wavelength_stop-wavelength_start)/(kernels_number-1)
     kernels = [np.empty([params.matrix_size,params.matrix_size], dtype="complex64")]*kernels_number 
-    kernels_shifted = [np.empty([params.matrix_size,params.matrix_size], dtype="complex64")]*kernels_number
+    # kernels_shifted = [np.empty([params.matrix_size,params.matrix_size], dtype="complex64")]*kernels_number
 
 
     for i in range(len(kernels)):
         kernels[i]=np.array(
             [
                 [
-                    H_off_axis(
+                    H_on_axis(
                         x / params.pixel_size / params.pixel_size / params.matrix_size,
                         y / params.pixel_size / params.pixel_size / params.matrix_size,
                         params.distance,
@@ -84,11 +84,11 @@ if __name__ == "__main__":
                 for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
             ]
         )
-        kernels_shifted[i] = np.array(np.roll(kernels[i], (int(params.matrix_size/2), int(params.matrix_size/2)), axis = (0,1)))
+        # kernels_shifted[i] = np.array(np.roll(kernels[i], (int(params.matrix_size/2), int(params.matrix_size/2)), axis = (0,1)))
 
         
         kernels[i]=LightField.from_complex_array(kernels[i], params.wavelength, params.pixel_size)
-        kernels_shifted[i]=LightField.from_complex_array(kernels_shifted[i], params.wavelength, params.pixel_size)
+        # kernels_shifted[i]=LightField.from_complex_array(kernels_shifted[i], params.wavelength, params.pixel_size)
         
         params.wavelength+=wavelength_step
 
@@ -98,16 +98,18 @@ if __name__ == "__main__":
     # plt.show()
 
     # figure, axis = plt.subplots(1, 2) 
-    # axis[0].imshow(kernels_shifted[1].get_amplitude(), interpolation="nearest")
-    # axis[1].imshow(kernels_shifted[1].get_phase(), interpolation="nearest")
+    # axis[0].imshow(kernels_shifted[0].get_amplitude(), interpolation="nearest")
+    # axis[1].imshow(kernels_shifted[0].get_phase(), interpolation="nearest")
     # plt.show()
+
+    initial_weights = np.mod(get_lens_distribution(params),2*np.pi)
 
     trained_model = NN.optimize(
         [LightField(amp, phase, params.wavelength, params.pixel_size)]*kernels_number,
         [LightField(target, phase, params.wavelength, params.pixel_size)]*kernels_number,
-        kernels_shifted,
-        params.distance,
-        iterations=5,
+        kernels,
+        initial_weights,
+        iterations=10000
     )
 
     
@@ -116,9 +118,9 @@ if __name__ == "__main__":
     NN.plot_loss()
 
     
-    weights = trained_model.layers[3].get_weights() 
-    weights[0]=get_lens_distribution(params) 
-    trained_model.layers[3].set_weights(weights)
+    # weights = trained_model.layers[3].get_weights()
+    # weights[0]=get_lens_distribution(params) 
+    # trained_model.layers[3].set_weights(weights)
 
     
 
@@ -131,8 +133,8 @@ if __name__ == "__main__":
     plotter = Plotter1(
         LightField(amp, optimized_phase, params.wavelength, params.pixel_size)
     )
-    # plotter.save_output_phase("outs/Structure_" + str_current_datetime + ".bmp")
-    plotter.save_output_phase("outs/Structure.bmp")
+    plotter.save_output_phase("outs/Structure_" + str_current_datetime + ".bmp")
+    # plotter.save_output_phase("outs/Structure.bmp")
 
     # # Plot the target amplitude
     # plotter = Plotter(LightField(target, phase, params.wavelength, params.pixel_size), output_type=PlotTypes.ABS)
@@ -179,8 +181,8 @@ if __name__ == "__main__":
         plotter = Plotter1(
         LightField.from_complex_array(result, params.wavelength, params.pixel_size)
         )
-        # plotter.save_output_amplitude("outs/Result_" + str(i) + "_" + str_current_datetime + ".bmp")
-        plotter.save_output_amplitude("outs/ResultNN.bmp")
+        plotter.save_output_amplitude("outs/Result_" + str(i) + "_" + str_current_datetime + ".bmp")
+        # plotter.save_output_amplitude("outs/ResultNN.bmp")
 
         params.wavelength+=wavelength_step
 

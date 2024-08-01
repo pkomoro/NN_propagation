@@ -97,7 +97,7 @@ class FFTConvolve(keras.layers.Layer):
         self.ComplexKernel = kernel[:, 0] * K.exp(1j * kernel[:, 1])
 
         self.ComplexField = tf.signal.fft2d(self.ComplexField)
-        # self.ComplexField = tf.signal.fftshift(self.ComplexField)
+        self.ComplexField = tf.signal.fftshift(self.ComplexField)
         # self.ComplexField = tf.cast(self.ComplexField, tf.complex64)
         
         # vis_data = self.ComplexField
