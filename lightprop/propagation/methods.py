@@ -24,6 +24,7 @@ from lightprop.propagation.keras_layers import (
     ReIm_convert,
     Slice,
     Structure,
+    Scale_phase_height,
 )
 
 
@@ -298,19 +299,23 @@ class MultiparameterNNPropagation_FFTConv(NNPropagation):
         inputField = keras.Input(shape=(2, matrix_size, matrix_size))
         # Kernel = keras.Input(shape=(2, matrix_size, matrix_size), batch_size=1)
         Kernel = keras.Input(shape=(2, matrix_size, matrix_size))
+        wavelength_scaling = keras.Input(shape=1)
 
-
+        
         x = Aexp()(inputField)
         x = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
 
         x = Structure(kernel_initializer=custom_initializer(phase_map))(x)
         x = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
 
+        x = Scale_phase_height()([x,wavelength_scaling])
+        x = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
+
         x = FFTConvolve()([x, Kernel])
 
         outputs = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
 
-        model = keras.Model(inputs=[inputField, Kernel], outputs=outputs)
+        model = keras.Model(inputs=[inputField, Kernel, wavelength_scaling], outputs=outputs)
 
         for layer in model.layers[:]:
             layer.trainable = False

@@ -14,6 +14,16 @@ class Aexp(keras.layers.Layer):
         self.phi = tf.math.atan2(inputs[:, 1], inputs[:, 0])
         return K.concatenate([self.A, self.phi], axis=1)
 
+class Scale_phase_height(keras.layers.Layer):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        
+        self.phi = inputs[0][:, 1] * inputs[1]
+        
+        return K.concatenate([inputs[0][:, 0], self.phi], axis=1)
+
 
 class ReIm_convert(keras.layers.Layer):
     def __init__(self, **kwargs):

@@ -109,7 +109,7 @@ class NNMultiTrainer(NNTrainer):
 
 class NN_FFTTrainer(NNTrainer):
     def optimize(
-        self, input_field: LightField, target_field: LightField, kernel: LightField, phase_map, iterations: int = 100):
+        self, input_field: LightField, target_field: LightField, kernel: LightField, wavelength_scaling, phase_map, iterations: int = 100):
         propagator = prop.MultiparameterNNPropagation_FFTConv()
         self.model = propagator.build_model(input_field[0].matrix_size, phase_map)
 
@@ -134,6 +134,7 @@ class NN_FFTTrainer(NNTrainer):
                 np.array(list(map(propagator.prepare_input_field, kernel))).reshape(
                     (len(input_field), 2, input_field[0].matrix_size, input_field[0].matrix_size)
                 ),
+                np.array(wavelength_scaling).reshape(len(input_field),),
             ],
             np.array(list(map(propagator.prepare_input_field, target_field))).reshape(
                 (len(input_field), 2, input_field[0].matrix_size, input_field[0].matrix_size)

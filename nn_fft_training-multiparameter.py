@@ -60,14 +60,16 @@ if __name__ == "__main__":
     # Check the difference in the output for different amounts of training
 
 
-    kernels_number=2
+    kernels_number=11
     wavelength_start=PropagationParams.get_wavelength_from_frequency(170)
     wavelength_stop=PropagationParams.get_wavelength_from_frequency(180)
-
     wavelength_step=(wavelength_stop-wavelength_start)/(kernels_number-1)
+    DWL = PropagationParams.get_wavelength_from_frequency(180)
+
     kernels = [np.empty([params.matrix_size,params.matrix_size], dtype="complex64")]*kernels_number 
     # kernels_shifted = [np.empty([params.matrix_size,params.matrix_size], dtype="complex64")]*kernels_number
 
+    wavelength_scaling=[np.empty(1)]*kernels_number
 
     for i in range(len(kernels)):
         kernels[i]=np.array(
@@ -90,6 +92,8 @@ if __name__ == "__main__":
         kernels[i]=LightField.from_complex_array(kernels[i], params.wavelength, params.pixel_size)
         # kernels_shifted[i]=LightField.from_complex_array(kernels_shifted[i], params.wavelength, params.pixel_size)
         
+        wavelength_scaling[i] = DWL / params.wavelength
+
         params.wavelength+=wavelength_step
 
     # figure, axis = plt.subplots(1, 2) 
@@ -104,12 +108,15 @@ if __name__ == "__main__":
 
     initial_weights = np.mod(get_lens_distribution(params),2*np.pi)
 
+    print(wavelength_scaling)
+
     trained_model = NN.optimize(
         [LightField(amp, phase, params.wavelength, params.pixel_size)]*kernels_number,
         [LightField(target, phase, params.wavelength, params.pixel_size)]*kernels_number,
         kernels,
+        wavelength_scaling,
         initial_weights,
-        iterations=10
+        iterations=10000
     )
 
     
@@ -121,9 +128,9 @@ if __name__ == "__main__":
     NN.plot_loss("outs/Loss_curve_" + str_current_datetime)
 
     
-    # weights = trained_model.layers[3].get_weights()
-    # weights[0]=get_lens_distribution(params) 
-    # trained_model.layers[3].set_weights(weights)
+    weights = trained_model.layers[3].get_weights()
+    weights[0]=initial_weights
+    trained_model.layers[3].set_weights(weights)
 
     
 
@@ -174,7 +181,7 @@ if __name__ == "__main__":
         )
 
         # Evaluate model on the input field
-        result = trained_model([field, kernel]).numpy()
+        result = trained_model([field, kernel, wavelength_scaling[i]]).numpy()
         result = result[0, 0, :, :] * np.exp(1j * result[0, 1, :, :])
 
 
