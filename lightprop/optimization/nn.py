@@ -60,13 +60,18 @@ class NNTrainer:
         self.model.load_weights(checkpoint_filepath)
         return self.model
 
-    def plot_loss(self):
-        plt.plot(self.history.history["loss"])
+    def plot_loss(self, path):
+        data = self.history.history["loss"]
+        plt.plot(data)
         plt.title("model loss")
         plt.ylabel("loss")
         plt.xlabel("epoch")
         plt.yscale("log")
-        plt.show()
+        plt.savefig(path + '.jpg', dpi=1000, bbox_inches='tight')
+        with open(path + '.txt', 'w') as file:
+            for line in data:
+                file.write(f"{str(line)}\n")
+        # plt.show()
 
 
 class NNMultiTrainer(NNTrainer):

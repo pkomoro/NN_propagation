@@ -30,8 +30,13 @@ if __name__ == "__main__":
     params.pixel_size = 1.8
 
 
-    params.wavelength = PropagationParams.get_wavelength_from_frequency(180)
+    
 
+    DWL = PropagationParams.get_wavelength_from_frequency(180)
+    params.wavelength = DWL
+    phase = np.mod(get_lens_distribution(params),2*np.pi)
+
+    params.wavelength = PropagationParams.get_wavelength_from_frequency(270)
     
     # Define input amplitude
 
@@ -41,27 +46,23 @@ if __name__ == "__main__":
 
     # Import phase map of the structure
     
-    image = Image.open("outs/Structure.bmp")
+    # image = Image.open("outs/Structure.bmp")
     
     # convert image to numpy array
-    phase = np.asarray(image)[:,:,0]
+    # phase = np.asarray(image)[:,:,0]
 
-    phase=phase/255
-    phase=phase*2
-    phase=phase*np.pi
+    # phase=phase/255
+    # phase=phase*2
+    # phase=phase*np.pi
 
-    # params.focal_length = 200
-    # params.distance = params.focal_length
-    # phase = np.mod(get_lens_distribution(params),2*np.pi)
-
-            
+                
     # propagate field
 
 
     field = LightField(amp, phase, params.wavelength, params.pixel_size)
 
 
-    result = prop.FFTPropagation().propagate(field, params.distance)
+    result = prop.FFTPropagation().propagate(field, params.distance, DWL)
 
     # show results
     current_datetime = datetime.now()
@@ -72,5 +73,5 @@ if __name__ == "__main__":
     # plotter.save_output_amplitude("outs/Input_" + str_current_datetime + ".bmp")
 
     plotter = Plotter1(result)
-    # plotter.save_output_amplitude("outs/Result_" + str_current_datetime + ".bmp")
-    plotter.save_output_amplitude("outs/Result.bmp")
+    plotter.save_output_amplitude("outs/Result_" + str_current_datetime + ".bmp")
+    # plotter.save_output_amplitude("outs/Result.bmp")

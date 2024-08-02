@@ -60,7 +60,7 @@ if __name__ == "__main__":
     # Check the difference in the output for different amounts of training
 
 
-    kernels_number=11
+    kernels_number=2
     wavelength_start=PropagationParams.get_wavelength_from_frequency(170)
     wavelength_stop=PropagationParams.get_wavelength_from_frequency(180)
 
@@ -109,13 +109,16 @@ if __name__ == "__main__":
         [LightField(target, phase, params.wavelength, params.pixel_size)]*kernels_number,
         kernels,
         initial_weights,
-        iterations=10000
+        iterations=10
     )
 
     
 
     # Plot loss vs epochs
-    NN.plot_loss()
+    current_datetime = datetime.now()
+    str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
+
+    NN.plot_loss("outs/Loss_curve_" + str_current_datetime)
 
     
     # weights = trained_model.layers[3].get_weights()
@@ -127,9 +130,7 @@ if __name__ == "__main__":
     # Extract the optimized phase map from the trainable layer
     optimized_phase = np.array(trained_model.layers[3].get_weights()[0])
 
-    current_datetime = datetime.now()
-    str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
-
+    
     plotter = Plotter1(
         LightField(amp, optimized_phase, params.wavelength, params.pixel_size)
     )

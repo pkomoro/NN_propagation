@@ -9,6 +9,8 @@ dist/
 # outputs
 *.png
 *.bmp
+*.jpg
+*.txt
 
 #environments and IDE configs
 env/

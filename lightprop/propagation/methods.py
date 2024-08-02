@@ -74,8 +74,12 @@ class FFTPropagation:
         )
         return hkernel
 
-    def propagate(self, propagation_input: LightField, distance: float) -> LightField:
+    def propagate(self, propagation_input: LightField, distance: float, DWL: float) -> LightField:
         logging.info("Calculating propagation")
+
+        field_distribution = propagation_input
+        field_distribution.phase *= (DWL / propagation_input.wavelength)
+        
         field_distribution = propagation_input.get_complex_field()
         kernel = self.calculate_kernel(
             distance, propagation_input.wavelength, propagation_input.matrix_size, propagation_input.pixel
