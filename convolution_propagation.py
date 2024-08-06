@@ -28,15 +28,8 @@ if __name__ == "__main__":
     params.beam_diameter = 2
     params.matrix_size = 256
     params.pixel_size = 1.8
-
-
-    
-
-    DWL = PropagationParams.get_wavelength_from_frequency(180)
-    params.wavelength = DWL
-    phase = np.mod(get_lens_distribution(params),2*np.pi)
-
-    params.wavelength = PropagationParams.get_wavelength_from_frequency(270)
+ 
+    DWL = PropagationParams.get_wavelength_from_frequency(180)    
     
     # Define input amplitude
 
@@ -46,32 +39,39 @@ if __name__ == "__main__":
 
     # Import phase map of the structure
     
-    # image = Image.open("outs/Structure.bmp")
-    
-    # convert image to numpy array
-    # phase = np.asarray(image)[:,:,0]
+    image = Image.open("outs/Structure_05.08.2024-15_13_17.bmp")
+    phase = np.asarray(image)[:,:,0]
+    phase = phase/255
+    phase = phase*2
+    phase = phase*np.pi
 
-    # phase=phase/255
-    # phase=phase*2
-    # phase=phase*np.pi
-
+    print(phase)
                 
     # propagate field
 
+    
+    freqs = range(170,192,2)
+    kernels_number = len(freqs)
+    
 
-    field = LightField(amp, phase, params.wavelength, params.pixel_size)
-
-
-    result = prop.FFTPropagation().propagate(field, params.distance, DWL)
-
-    # show results
     current_datetime = datetime.now()
     str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
 
+    for i in freqs:
 
-    # plotter = Plotter1(field)
-    # plotter.save_output_amplitude("outs/Input_" + str_current_datetime + ".bmp")
+        print(i)
+        params.wavelength = PropagationParams.get_wavelength_from_frequency(i)
 
-    plotter = Plotter1(result)
-    plotter.save_output_amplitude("outs/Result_" + str_current_datetime + ".bmp")
-    # plotter.save_output_amplitude("outs/Result.bmp")
+        phase_loop = phase.copy()
+        
+        field = LightField(amp, phase_loop, params.wavelength, params.pixel_size)
+
+        print(phase_loop)
+        
+        result = prop.FFTPropagation().propagate(field, params.distance, DWL)
+
+        print(phase_loop)
+
+        plotter = Plotter1(result)
+        plotter.save_output_amplitude("outs/ResultConv_" + str(i) + "GHz_" + str_current_datetime + ".bmp")
+    

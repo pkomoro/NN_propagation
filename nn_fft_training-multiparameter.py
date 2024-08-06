@@ -60,18 +60,17 @@ if __name__ == "__main__":
     # Check the difference in the output for different amounts of training
 
 
-    kernels_number=11
-    wavelength_start=PropagationParams.get_wavelength_from_frequency(170)
-    wavelength_stop=PropagationParams.get_wavelength_from_frequency(180)
-    wavelength_step=(wavelength_stop-wavelength_start)/(kernels_number-1)
+    freqs = range(170,192,2)
+    kernels_number = len(freqs)
+    
     DWL = PropagationParams.get_wavelength_from_frequency(180)
 
     kernels = [np.empty([params.matrix_size,params.matrix_size], dtype="complex64")]*kernels_number 
-    # kernels_shifted = [np.empty([params.matrix_size,params.matrix_size], dtype="complex64")]*kernels_number
 
     wavelength_scaling=[np.empty(1)]*kernels_number
 
-    for i in range(len(kernels)):
+    for i in range(len(freqs)):
+        params.wavelength = PropagationParams.get_wavelength_from_frequency(freqs[i])
         kernels[i]=np.array(
             [
                 [
@@ -86,29 +85,16 @@ if __name__ == "__main__":
                 for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
             ]
         )
-        # kernels_shifted[i] = np.array(np.roll(kernels[i], (int(params.matrix_size/2), int(params.matrix_size/2)), axis = (0,1)))
 
         
         kernels[i]=LightField.from_complex_array(kernels[i], params.wavelength, params.pixel_size)
-        # kernels_shifted[i]=LightField.from_complex_array(kernels_shifted[i], params.wavelength, params.pixel_size)
         
         wavelength_scaling[i] = DWL / params.wavelength
 
-        params.wavelength+=wavelength_step
 
-    # figure, axis = plt.subplots(1, 2) 
-    # axis[0].imshow(kernels[0].get_amplitude(), interpolation="nearest")
-    # axis[1].imshow(kernels[0].get_phase(), interpolation="nearest")
-    # plt.show()
-
-    # figure, axis = plt.subplots(1, 2) 
-    # axis[0].imshow(kernels_shifted[0].get_amplitude(), interpolation="nearest")
-    # axis[1].imshow(kernels_shifted[0].get_phase(), interpolation="nearest")
-    # plt.show()
-
+    
     initial_weights = np.mod(get_lens_distribution(params),2*np.pi)
 
-    print(wavelength_scaling)
 
     trained_model = NN.optimize(
         [LightField(amp, phase, params.wavelength, params.pixel_size)]*kernels_number,
@@ -126,12 +112,6 @@ if __name__ == "__main__":
     str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
 
     NN.plot_loss("outs/Loss_curve_" + str_current_datetime)
-
-    
-    weights = trained_model.layers[3].get_weights()
-    weights[0]=initial_weights
-    trained_model.layers[3].set_weights(weights)
-
     
 
     # Extract the optimized phase map from the trainable layer
@@ -142,16 +122,7 @@ if __name__ == "__main__":
         LightField(amp, optimized_phase, params.wavelength, params.pixel_size)
     )
     plotter.save_output_phase("outs/Structure_" + str_current_datetime + ".bmp")
-    # plotter.save_output_phase("outs/Structure.bmp")
-
-    # # Plot the target amplitude
-    # plotter = Plotter(LightField(target, phase, params.wavelength, params.pixel_size), output_type=PlotTypes.ABS)
-    # plotter.save_output_as_figure("outs/Target_" + str_current_datetime + ".png")
-
-    # # Plot the input amplitude
-    # plotter = Plotter(LightField(amp, phase, params.wavelength, params.pixel_size), output_type=PlotTypes.ABS)
-    # plotter.save_output_as_figure("outs/Input_" + str_current_datetime + ".png")
-    # Plot the result - output amplitude
+   
 
     # Prepare input field and kernel
     field = np.array([amp, phase])
@@ -165,9 +136,9 @@ if __name__ == "__main__":
         order="F",
     )
 
-    params.wavelength=wavelength_start
-
+    
     for i in range(len(kernels)):
+        params.wavelength = PropagationParams.get_wavelength_from_frequency(freqs[i])
         kernel = np.array([kernels[i].get_re(), kernels[i].get_im()])
 
         kernel = kernel.reshape(
@@ -189,9 +160,9 @@ if __name__ == "__main__":
         plotter = Plotter1(
         LightField.from_complex_array(result, params.wavelength, params.pixel_size)
         )
-        plotter.save_output_amplitude("outs/Result_" + str(i) + "_" + str_current_datetime + ".bmp")
+        plotter.save_output_amplitude("outs/ResultNN_" + str(freqs[i]) + "GHz_" + str_current_datetime + ".bmp")
         # plotter.save_output_amplitude("outs/ResultNN.bmp")
 
-        params.wavelength+=wavelength_step
+        
 
 

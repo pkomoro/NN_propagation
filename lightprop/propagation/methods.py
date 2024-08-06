@@ -79,18 +79,23 @@ class FFTPropagation:
         logging.info("Calculating propagation")
 
         field_distribution = propagation_input
+        # print(field_distribution.phase)
         field_distribution.phase *= (DWL / propagation_input.wavelength)
+        # print(field_distribution.phase)
+
+        # print(DWL / propagation_input.wavelength)
         
-        field_distribution = propagation_input.get_complex_field()
+        field_distribution = field_distribution.get_complex_field()
+
         kernel = self.calculate_kernel(
             distance, propagation_input.wavelength, propagation_input.matrix_size, propagation_input.pixel
         )
         
-        kernel = tf.cast(tf.signal.fftshift(kernel), tf.complex64)
+        # kernel = tf.cast(tf.signal.fftshift(kernel), tf.complex64)
 
         output = tf.signal.fft2d(field_distribution)
         
-        # output = tf.cast(tf.signal.fftshift(output), tf.complex64)
+        output = tf.cast(tf.signal.fftshift(output), tf.complex64)
   
         output = np.multiply(output, kernel)
 
