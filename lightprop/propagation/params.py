@@ -107,8 +107,8 @@ class PropagationParams:
             "matrix_size": 128,
             "wavelength": PropagationParams.get_wavelength_from_frequency(140),
             "beam_diameter": 20,
-            "focal_length": 500,
-            "distance": 500,
+            "focal_length": 200,
+            "distance": 200,
             "pixel_size": 1,
         }
         return cls.get_params_from_dict(data)

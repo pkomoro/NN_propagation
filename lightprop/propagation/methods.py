@@ -62,7 +62,7 @@ class FFTPropagation:
         hkernel = np.array(
             [
                 [
-                        H_off_axis(
+                        H_on_axis(
                         x / pixel_size / pixel_size / matrix_size,
                         y / pixel_size / pixel_size / matrix_size,
                         distance,

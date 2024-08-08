@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # Choose proper propagation parameters
     params.beam_diameter = 4
     params.matrix_size = 256
-    params.pixel_size = 1.8
+    params.pixel_size = 0.8
     params.wavelength = PropagationParams.get_wavelength_from_frequency(180)
 
     # Define target optical field and input amplitude
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     # Check the difference in the output for different amounts of training
 
 
-    freqs = range(170,192,2)
+    freqs = range(140,221,1)
     kernels_number = len(freqs)
     
     DWL = PropagationParams.get_wavelength_from_frequency(180)
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         kernels,
         wavelength_scaling,
         initial_weights,
-        iterations=10000
+        iterations=20000
     )
 
     
