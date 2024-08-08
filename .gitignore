@@ -11,6 +11,7 @@ dist/
 *.bmp
 *.jpg
 *.txt
+*.stl
 
 #environments and IDE configs
 env/
