@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     # Choose proper propagation parameters
     params.beam_diameter = 2
-    params.matrix_size = 256
+    params.matrix_size = 128
     params.pixel_size = 0.8
  
     DWL = PropagationParams.get_wavelength_from_frequency(180)    
@@ -39,18 +39,17 @@ if __name__ == "__main__":
 
     # Import phase map of the structure
     
-    image = Image.open("outs/Structure_07.08.2024-16_59_43.bmp")
+    image = Image.open("outs/Zach/structure.bmp")
     phase = np.asarray(image)[:,:,0]
     phase = phase/255
     phase = phase*2
     phase = phase*np.pi
 
-    print(phase)
                 
     # propagate field
 
     
-    freqs = range(140,220,2)
+    freqs = range(160,201,1)
     kernels_number = len(freqs)
     
 

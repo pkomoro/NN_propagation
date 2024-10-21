@@ -60,7 +60,7 @@ if __name__ == "__main__":
     # Check the difference in the output for different amounts of training
 
 
-    freqs = range(140,221,1)
+    freqs = range(160,201,1)
     kernels_number = len(freqs)
     
     DWL = PropagationParams.get_wavelength_from_frequency(180)

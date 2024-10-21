@@ -80,7 +80,8 @@ class FFTPropagation:
 
         field_distribution = propagation_input
         # print(field_distribution.phase)
-        field_distribution.phase *= (DWL / propagation_input.wavelength)
+       
+        field_distribution.phase = field_distribution.phase * (DWL / propagation_input.wavelength)
         # print(field_distribution.phase)
 
         # print(DWL / propagation_input.wavelength)
@@ -98,6 +99,8 @@ class FFTPropagation:
         output = tf.cast(tf.signal.fftshift(output), tf.complex64)
   
         output = np.multiply(output, kernel)
+
+        output = tf.cast(tf.signal.fftshift(output), tf.complex64)
 
         output = tf.signal.ifft2d(output)
 

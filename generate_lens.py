@@ -11,7 +11,9 @@ if __name__ == "__main__":
 
     params.matrix_size = 256
     params.pixel_size = 0.8
-    radius = 200
+    params.distance = 150
+    params.focal_length = params.distance
+    radius = 75
 
     phase = np.mod(get_lens_distribution(params),2*np.pi) * circle_aperture(params, radius)
 
