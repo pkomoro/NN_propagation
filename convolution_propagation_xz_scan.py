@@ -29,11 +29,10 @@ if __name__ == "__main__":
     params.matrix_size = 256
     params.pixel_size = 0.8
  
-    DWL = PropagationParams.get_wavelength_from_frequency(180)    
     
     # Define input amplitude
 
-    params.beam_diameter = 30
+    params.beam_diameter = 25
     amp = get_gaussian_distribution(params)
     
 
@@ -49,23 +48,26 @@ if __name__ == "__main__":
     # propagate field
 
     
-    freqs = range(160,201,1)
-    kernels_number = len(freqs)
+    distances = range(20,400,1)
+    kernels_number = len(distances)
+
+    cross_section = np.empty([kernels_number, params.matrix_size])
     
 
     current_datetime = datetime.now()
     str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
 
-    for i in freqs:
+    for i in range(kernels_number):
 
-        params.wavelength = PropagationParams.get_wavelength_from_frequency(i)
+        params.distance = distances[i]
 
         phase_loop = phase.copy()
         
         field = LightField(amp, phase_loop, params.wavelength, params.pixel_size)
         
-        result = prop.FFTPropagation().propagate(field, params.distance, DWL)
+        result = prop.FFTPropagation().propagate(field, params.distance, params.wavelength)
+        cross_section[i] = result.amp[np.round(params.matrix_size/2).astype(int)]
 
-        plotter = Plotter1(result)
-        plotter.save_output_amplitude("outs/Zach/ResultConv_" + str(i) + "GHz_" + str_current_datetime + ".bmp")
+
+    plt.imsave("outs/Zach/xz_scan.bmp", cross_section, cmap='gray')
     

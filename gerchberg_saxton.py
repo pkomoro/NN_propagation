@@ -96,6 +96,7 @@ if __name__ == "__main__":
 
     # Plot the result - output amplitude
     plotter = Plotter1(output_plane)
+
     plotter.save_output_amplitude("outs/Zach/result.png")
 
     # Plot the result - output phase
