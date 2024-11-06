@@ -20,21 +20,23 @@ if __name__ == "__main__":
     # Choose proper propagation parameters
     params.beam_diameter = 2
     params.matrix_size = 256
-    params.pixel_size = 0.8
+    params.pixel_size = 0.4
+    params.wavelength = params.get_wavelength_from_frequency(275)
+    params.distance = 30
 
     # Define target optical field and input amplitude
     # In this example two focal points placed outside the main optical axis
-    x_shift1 = 20
-    x_shift2 = 50
-    target = np.array(
-        [
-            [
-                gaussian(np.sqrt((x - x_shift1) ** 2 + y**2), params.beam_diameter)
-                for x in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
-            ]
-            for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
-        ]
-    )
+    # x_shift1 = 20
+    # x_shift2 = 50
+    # target = np.array(
+    #     [
+    #         [
+    #             gaussian(np.sqrt((x - x_shift1) ** 2 + y**2), params.beam_diameter)
+    #             for x in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
+    #         ]
+    #         for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
+    #     ]
+    # )
     # ) + np.array(
     #     [
     #         [
@@ -47,7 +49,7 @@ if __name__ == "__main__":
 
 
     # Donut shape
-    r_shift = 20
+    r_shift = 10
     target = np.array(
         [
             [
@@ -68,8 +70,8 @@ if __name__ == "__main__":
     # )
 
 
-
-    params.beam_diameter = 25
+    
+    params.beam_diameter = 3.3
     amp = get_gaussian_distribution(params)
     phase = np.array(
         [

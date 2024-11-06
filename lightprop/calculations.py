@@ -62,18 +62,18 @@ def get_gaussian_distribution(params: PropagationParams, x0: float = 0, y0: floa
     )
 
 
-def circle(x,y,r):
+def circle(x,y,r,fill):
     if np.sqrt(x**2 + y**2) <= r:
-        return 1
+        return fill
     else:
-        return 0
+        return 1-fill
 
 
-def circle_aperture(params: PropagationParams, r: float):
+def circle_aperture(params: PropagationParams, r: float, fill: float):
     return np.array(
         [
             [
-                circle(x, y, r)
+                circle(x, y, r, fill)
                 for x in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
             ]
             for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
