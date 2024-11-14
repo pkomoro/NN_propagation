@@ -25,15 +25,15 @@ if __name__ == "__main__":
     params = PropagationParams.get_example_propagation_data()
 
     # Choose proper propagation parameters
-    params.matrix_size = 256
+    params.matrix_size = 512
     params.pixel_size = 0.4
     params.wavelength = params.get_wavelength_from_frequency(275)
-    params.distance = 30
+    params.distance = 60
  
     
     # Define input amplitude
 
-    params.beam_diameter = 3.3
+    params.beam_diameter = 6.5
     amp = get_gaussian_distribution(params)
     
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # propagate field
 
     
-    distances = np.arange(0.5,60,0.5)
+    distances = np.arange(0.5,100,0.5)
     kernels_number = len(distances)
 
     cross_section = np.empty([kernels_number, params.matrix_size])
@@ -68,12 +68,12 @@ if __name__ == "__main__":
         
         field = LightField(amp, phase_loop, params.wavelength, params.pixel_size)
 
-        if distances[i]>=20:
-            field.amp = field.amp * obstacle
+        # if distances[i]>=20:
+        #     field.amp = field.amp * obstacle
         
         result = prop.FFTPropagation().propagate(field, params.distance, params.wavelength)
         cross_section[i] = result.amp[np.round(params.matrix_size/2).astype(int)]
 
 
-    plt.imsave("outs/Zach/xz_scan_with_obstacle.bmp", cross_section, cmap='gray')
+    plt.imsave("outs/Zach/xz_scan.bmp", cross_section, cmap='gray')
     

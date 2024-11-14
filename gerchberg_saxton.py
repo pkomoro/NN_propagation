@@ -8,7 +8,7 @@ Created on Thu Aug  4 15:44:04 2022
 from dis import dis
 import numpy as np
 
-from lightprop.calculations import gaussian, get_gaussian_distribution
+from lightprop.calculations import gaussian, get_gaussian_distribution, get_lens_distribution
 from lightprop.lightfield import LightField
 from lightprop.optimization.gs import GerchbergSaxtonFFT
 from lightprop.propagation.params import PropagationParams
@@ -19,10 +19,11 @@ if __name__ == "__main__":
 
     # Choose proper propagation parameters
     params.beam_diameter = 2
-    params.matrix_size = 256
+    params.matrix_size = 512
     params.pixel_size = 0.4
     params.wavelength = params.get_wavelength_from_frequency(275)
-    params.distance = 30
+    params.focal_length = 40
+    params.distance = 60
 
     # Define target optical field and input amplitude
     # In this example two focal points placed outside the main optical axis
@@ -49,7 +50,7 @@ if __name__ == "__main__":
 
 
     # Donut shape
-    r_shift = 10
+    r_shift = 15
     target = np.array(
         [
             [
@@ -71,7 +72,7 @@ if __name__ == "__main__":
 
 
     
-    params.beam_diameter = 3.3
+    params.beam_diameter = 6.5
     amp = get_gaussian_distribution(params)
     phase = np.array(
         [
@@ -90,7 +91,14 @@ if __name__ == "__main__":
     # Plot the result - optimized phase map
     plotter = Plotter1(input_plane)
     plotter.save_output_phase("outs/Zach/structure.bmp")
-       
+
+    # Plot the result - optimized phase map with focusing lens for divergent wave
+    lens = get_lens_distribution(params)
+    input_plane.phase = input_plane.phase + lens
+    
+    plotter = Plotter1(input_plane)
+    plotter.save_output_phase("outs/Zach/structure_with_lens.bmp")
+
 
     # Plot the input amplitude
     plotter = Plotter1(input_plane)
