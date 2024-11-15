@@ -21,7 +21,7 @@ if __name__ == "__main__":
     params.beam_diameter = 2
     params.matrix_size = 512
     params.pixel_size = 0.4
-    params.wavelength = params.get_wavelength_from_frequency(275)
+    params.wavelength = params.get_wavelength_from_frequency(100)
     params.focal_length = 40
     params.distance = 60
 
