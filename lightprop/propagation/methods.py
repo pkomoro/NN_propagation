@@ -105,6 +105,15 @@ class FFTPropagation:
         output = tf.signal.ifft2d(output)
 
         return LightField.from_complex_array(output, propagation_input.wavelength, propagation_input.pixel)
+    
+    def angular_space(self, propagation_input: LightField) -> LightField:
+        logging.info("Calculating Fourier transform")
+
+        output = tf.signal.fft2d(propagation_input.get_complex_field())
+
+        output = tf.cast(tf.signal.fftshift(output), tf.complex64)
+
+        return LightField.from_complex_array(output, propagation_input.wavelength, propagation_input.pixel)
 
 
 class NNPropagation:

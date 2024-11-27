@@ -29,6 +29,9 @@ def H_off_axis(vx, vy, distance, wavelength):
 def gaussian(r, variance):
     return np.exp(-(r**2) / (2 * variance**2))
 
+def tilted_wavefront(a, x):
+    return x*np.tan(np.radians(a))
+
 
 def lens(r, focal_length, wavelength):
     return (-2 * np.pi) / wavelength * np.sqrt(r**2 + focal_length**2)
@@ -55,6 +58,18 @@ def get_gaussian_distribution(params: PropagationParams, x0: float = 0, y0: floa
         [
             [
                 gaussian(np.sqrt((x - x0) ** 2 + (y - y0) ** 2), params.beam_diameter)
+                for x in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
+            ]
+            for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
+        ]
+    )
+
+
+def get_tilted_wavefront(params: PropagationParams, a: float = 0):
+    return np.array(
+        [
+            [
+                tilted_wavefront(a, x)
                 for x in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
             ]
             for y in np.arange(-params.matrix_size / 2, params.matrix_size / 2) * params.pixel_size
