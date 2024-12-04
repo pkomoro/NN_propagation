@@ -115,7 +115,7 @@ class NN_FFTTrainer(NNTrainer):
 
         self.log.info("Compiling model...")
         self.model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=4e-4),
+            optimizer=keras.optimizers.Adam(learning_rate=5e-3),
             loss=keras.losses.MeanSquaredError(),
         )
 
