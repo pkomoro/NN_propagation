@@ -46,10 +46,10 @@ def FZP_phase(r, rs):
 
 
 def get_FZP_distribution(params: PropagationParams, x0: float = 0, y0: float = 0):
-    zones = 10
+    zones = 20
     rs = [0] * zones
     for i in range(zones):
-        rs[i] = np.sqrt(2*params.focal_length * i * params.wavelength)
+        rs[i] = np.sqrt(2*params.focal_length / 2 * i * params.wavelength)
 
     return np.array(
         [

@@ -21,26 +21,32 @@ from lightprop.visualisation import Plotter, Plotter1, PlotTypes
 from lightprop.propagation import methods as prop
 from matplotlib import pyplot as plt
 
+from alive_progress import alive_bar
+
 if __name__ == "__main__":
     params = PropagationParams.get_example_propagation_data()
 
     # Choose proper propagation parameters
-    params.matrix_size = 512
-    params.pixel_size = 0.4
-    params.wavelength = params.get_wavelength_from_frequency(100)
-    params.distance = 60
+    params.beam_diameter = 2
+    params.matrix_size = 1024
+    params.pixel_size = 0.01
+    params.wavelength = 1030 * 10**-6
+    params.focal_length = 50
+    params.distance = params.focal_length
  
     
     # Define input amplitude
 
-    params.beam_diameter = 6.5
+    params.beam_diameter = 0.5
     amp = get_gaussian_distribution(params)
     
 
 
     # Import phase map of the structure
     
-    image = Image.open("outs/Zach/structure.bmp")
+    name = "px_0.005mm_1024_wavelength_1030nm_f_50mm"
+    
+    image = Image.open("outs/Nanochisel/FZP_" + name + ".bmp")
     phase = np.asarray(image)[:,:,0]
     phase = phase/255
     phase = phase*2
@@ -50,26 +56,34 @@ if __name__ == "__main__":
     # propagate field
 
     
-    distances = np.arange(0.5,100,0.5)
+    distance = 2 * params.distance
+    distances = np.arange(1, distance, 1)
     kernels_number = len(distances)
 
-    cross_section = np.empty([kernels_number, params.matrix_size])
+    scale = round(distance / params.matrix_size / params.pixel_size)
+
+    cross_section = np.empty([kernels_number * scale, params.matrix_size])
     
     obstacle = circle_aperture(params, 5, 0)
 
     current_datetime = datetime.now()
     str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
 
-    for i in range(kernels_number):
+    with alive_bar(kernels_number) as bar:
+        for i in range(kernels_number):
 
-        params.distance = distances[i]
+            params.distance = distances[i]
 
-        phase_loop = phase.copy()
-        
-        field = LightField(amp, phase_loop, params.wavelength, params.pixel_size)
-        
-        result = prop.FFTPropagation().propagate(field, params.distance, params.wavelength)
-        cross_section[i] = result.amp[np.round(params.matrix_size/2).astype(int)]
+            phase_loop = phase.copy()
+            
+            field = LightField(amp, phase_loop, params.wavelength, params.pixel_size)
+            
+            result = prop.FFTPropagation().propagate(field, params.distance, params.wavelength)
+
+            for j in range(scale):
+                cross_section[i * scale + j] = result.amp[np.round(params.matrix_size/2).astype(int)]
+            
+            bar()
 
 
     # putting an obstacle
@@ -100,5 +114,5 @@ if __name__ == "__main__":
 
     #         cross_section[i] = result.amp[np.round(params.matrix_size/2).astype(int)]
 
-    plt.imsave("outs/Zach/xz_scan.bmp", cross_section, cmap='gray')
+    plt.imsave("outs/Nanochisel/xz_scan_" + name + ".bmp", cross_section, cmap='gray')
     

@@ -61,6 +61,12 @@ class Plotter1:
         plt.imsave(path,self.propagation_result.get_amplitude(), cmap='gray')
         logging.info("Generated")
 
+    def save_output_intensity(self, path):
+        self._prepare_path_to_save(path)
+        logging.info(f"Saving to {path}")
+        plt.imsave(path,self.propagation_result.get_intensity(), cmap='gray')
+        logging.info("Generated")
+
     def save_output_phase(self, path):
         self._prepare_path_to_save(path)
         logging.info(f"Saving to {path}")

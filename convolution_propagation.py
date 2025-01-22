@@ -26,20 +26,30 @@ if __name__ == "__main__":
 
     # Choose proper propagation parameters
     params.beam_diameter = 2
-    params.matrix_size = 256
-    params.pixel_size = 0.8
+    params.matrix_size = 1024
+    params.pixel_size = 0.005
+    params.wavelength = 1030 * 10**-6
+    params.focal_length = 50
+    params.distance = params.focal_length
  
-    DWL = PropagationParams.get_wavelength_from_frequency(180)    
-    
+        
     # Define input amplitude
 
-    params.beam_diameter = 30
+    params.beam_diameter = 0.5
     amp = get_gaussian_distribution(params)
     
     phase = get_FZP_distribution(params)
 
-    plotter = Plotter1(LightField(amp, phase, params.wavelength, params.pixel_size))
-    plotter.save_output_phase("outs/FZP.bmp")
+    field = LightField(amp, phase, params.wavelength, params.pixel_size)
+
+    # current_datetime = datetime.now()
+    # str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
+
+    name = "px_" + str(params.pixel_size) + "mm_" + str(params.matrix_size) + "_wavelength_" + str(round(params.wavelength * 10**6)) + "nm_f_" + str(params.focal_length) + "mm"
+
+    plotter = Plotter1(field)
+    plotter.save_output_phase("outs/Nanochisel/FZP_" + name + ".bmp")
+    plotter.save_output_intensity("outs/Nanochisel/Input_" + name + ".bmp")
 
     # Import phase map of the structure
     
@@ -50,27 +60,12 @@ if __name__ == "__main__":
     # phase = phase*np.pi
 
 
-
     # propagate field
+              
+    result = prop.FFTPropagation().propagate(field, params.distance, params.wavelength)
+
+    plotter = Plotter1(result)
+    plotter.save_output_intensity("outs/nanochisel/Focal_plane_" + name + ".bmp")
 
     
-    # freqs = range(160,201,1)
-    # kernels_number = len(freqs)
-    
-
-    # current_datetime = datetime.now()
-    # str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
-
-    # for i in freqs:
-
-    #     params.wavelength = PropagationParams.get_wavelength_from_frequency(i)
-
-    #     phase_loop = phase.copy()
-        
-    #     field = LightField(amp, phase_loop, params.wavelength, params.pixel_size)
-        
-    #     result = prop.FFTPropagation().propagate(field, params.distance, DWL)
-
-    #     plotter = Plotter1(result)
-    #     plotter.save_output_amplitude("outs/Zach/ResultConv_" + str(i) + "GHz_" + str_current_datetime + ".bmp")
     
