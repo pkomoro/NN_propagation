@@ -330,3 +330,74 @@ class MultiparameterNNPropagation_FFTConv(NNPropagation):
         model.layers[3].trainable = True
 
         return model
+
+
+class MultiLayerNN(NNPropagation):
+    def propagate(self, propagation_input: LightField, kernel: LightField, phase_map) -> LightField:
+        logging.info("Calculating propagation")
+        field_distribution = map(self.prepare_input_field, propagation_input)
+        model = self.build_model(propagation_input.matrix_size, phase_map)
+        conv = model(field_distribution, kernel).numpy()
+        return LightField.from_re_im(
+            conv[0, 0, :, :], conv[0, 1, :, :], propagation_input.wavelength, propagation_input.pixel
+        )
+    
+    # def custom_initializer(shape, dtype=None):
+    #     return tf.convert_to_tensor(np.ones(shape), dtype=tf.dtypes.float64)
+
+    def calculate_kernel(self, distance, wavelength, matrix_size, pixel_size):
+        hkernel = np.array(
+            [
+                [
+                        H_on_axis(
+                        x / pixel_size / pixel_size / matrix_size,
+                        y / pixel_size / pixel_size / matrix_size,
+                        distance,
+                        wavelength,
+                        )
+                    for x in np.arange(-matrix_size / 2, matrix_size / 2) * pixel_size
+                ]
+                for y in np.arange(-matrix_size / 2, matrix_size / 2) * pixel_size
+            ]
+        )
+        return hkernel
+    
+    def set_kernels(self, model, propagation_input: LightField, distance: float):
+        kernel = self.calculate_kernel(
+            distance, propagation_input.wavelength, propagation_input.matrix_size, propagation_input.pixel
+        )
+
+        model.layers[11].set_weights([np.real(kernel)])
+        model.layers[12].set_weights([np.imag(kernel)])
+        model.layers[13].set_weights([np.real(kernel)])
+        model.layers[14].set_weights([np.imag(kernel)])
+
+        return model
+
+    def build_model(self, matrix_size: int, phase_map):
+        inputField = keras.Input(shape=(2, matrix_size, matrix_size))
+        # Kernel = keras.Input(shape=(2, matrix_size, matrix_size), batch_size=1)
+        Kernel = keras.Input(shape=(2, matrix_size, matrix_size))
+        wavelength_scaling = keras.Input(shape=1)
+
+        
+        x = Aexp()(inputField)
+        x = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
+
+        x = Structure(kernel_initializer=custom_initializer(phase_map))(x)
+        x = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
+
+        x = Scale_phase_height()([x,wavelength_scaling])
+        x = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
+
+        x = FFTConvolve()([x, Kernel])
+
+        outputs = keras.layers.Reshape((2, matrix_size, matrix_size))(x)
+
+        model = keras.Model(inputs=[inputField, Kernel, wavelength_scaling], outputs=outputs)
+
+        for layer in model.layers[:]:
+            layer.trainable = False
+        model.layers[3].trainable = True
+
+        return model

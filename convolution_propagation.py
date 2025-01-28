@@ -13,7 +13,7 @@ from datetime import datetime
 
 from PIL import Image
 
-from lightprop.calculations import gaussian, get_gaussian_distribution, get_lens_distribution, get_FZP_distribution
+from lightprop.calculations import gaussian, get_gaussian_distribution, get_lens_distribution, get_FZP_distribution, get_FZP_radii
 from lightprop.lightfield import LightField
 from lightprop.optimization.gs import GerchbergSaxton
 from lightprop.propagation.params import PropagationParams
@@ -26,46 +26,51 @@ if __name__ == "__main__":
 
     # Choose proper propagation parameters
     params.beam_diameter = 2
-    params.matrix_size = 1024
-    params.pixel_size = 0.005
+    params.matrix_size = 2048
+    params.pixel_size = 0.01
     params.wavelength = 1030 * 10**-6
-    params.focal_length = 50
+    params.focal_length = 200
     params.distance = params.focal_length
  
         
     # Define input amplitude
 
-    params.beam_diameter = 0.5
-    amp = get_gaussian_distribution(params)
+    params.beam_diameter = 1
+    # amp = get_gaussian_distribution(params)
     
     phase = get_FZP_distribution(params)
 
-    field = LightField(amp, phase, params.wavelength, params.pixel_size)
+    radii = get_FZP_radii(params)
 
-    # current_datetime = datetime.now()
-    # str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
+    for i in radii:
+        print(round(i,3))
 
-    name = "px_" + str(params.pixel_size) + "mm_" + str(params.matrix_size) + "_wavelength_" + str(round(params.wavelength * 10**6)) + "nm_f_" + str(params.focal_length) + "mm"
+    # field = LightField(amp, phase, params.wavelength, params.pixel_size)
 
-    plotter = Plotter1(field)
-    plotter.save_output_phase("outs/Nanochisel/FZP_" + name + ".bmp")
-    plotter.save_output_intensity("outs/Nanochisel/Input_" + name + ".bmp")
+    # # current_datetime = datetime.now()
+    # # str_current_datetime = current_datetime.strftime("%d.%m.%Y-%H_%M_%S")
 
-    # Import phase map of the structure
+    # name = "px_" + str(params.pixel_size) + "mm_" + str(params.matrix_size) + "_wavelength_" + str(round(params.wavelength * 10**6)) + "nm_f_" + str(params.focal_length) + "mm"
+
+    # plotter = Plotter1(field)
+    # plotter.save_output_phase("outs/Nanochisel/FZP_" + name + ".bmp")
+    # plotter.save_output_intensity("outs/Nanochisel/Input_" + name + ".bmp")
+
+    # # Import phase map of the structure
     
-    # image = Image.open("outs/Zach/structure.bmp")
-    # phase = np.asarray(image)[:,:,0]
-    # phase = phase/255
-    # phase = phase*2
-    # phase = phase*np.pi
+    # # image = Image.open("outs/Zach/structure.bmp")
+    # # phase = np.asarray(image)[:,:,0]
+    # # phase = phase/255
+    # # phase = phase*2
+    # # phase = phase*np.pi
 
 
-    # propagate field
+    # # propagate field
               
-    result = prop.FFTPropagation().propagate(field, params.distance, params.wavelength)
+    # result = prop.FFTPropagation().propagate(field, params.distance, params.wavelength)
 
-    plotter = Plotter1(result)
-    plotter.save_output_intensity("outs/nanochisel/Focal_plane_" + name + ".bmp")
+    # plotter = Plotter1(result)
+    # plotter.save_output_intensity("outs/nanochisel/Focal_plane_" + name + ".bmp")
 
     
     

@@ -46,7 +46,7 @@ def FZP_phase(r, rs):
 
 
 def get_FZP_distribution(params: PropagationParams, x0: float = 0, y0: float = 0):
-    zones = 20
+    zones = 30
     rs = [0] * zones
     for i in range(zones):
         rs[i] = np.sqrt(2*params.focal_length / 2 * i * params.wavelength)
@@ -61,6 +61,13 @@ def get_FZP_distribution(params: PropagationParams, x0: float = 0, y0: float = 0
         ]
     )
 
+def get_FZP_radii(params: PropagationParams):
+    zones = 30
+    rs = [0] * zones
+    for i in range(zones):
+        rs[i] = np.sqrt(2*params.focal_length / 2 * i * params.wavelength)
+
+    return rs
 
 def compare_np_arrays(array1, array2):
     return np.max(array1 - array2) < 10**-6

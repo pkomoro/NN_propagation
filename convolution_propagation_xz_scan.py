@@ -28,23 +28,23 @@ if __name__ == "__main__":
 
     # Choose proper propagation parameters
     params.beam_diameter = 2
-    params.matrix_size = 1024
+    params.matrix_size = 2048
     params.pixel_size = 0.01
     params.wavelength = 1030 * 10**-6
-    params.focal_length = 50
+    params.focal_length = 200
     params.distance = params.focal_length
  
     
     # Define input amplitude
 
-    params.beam_diameter = 0.5
     amp = get_gaussian_distribution(params)
     
 
 
     # Import phase map of the structure
     
-    name = "px_0.005mm_1024_wavelength_1030nm_f_50mm"
+    name = "px_0.01mm_2048_wavelength_1030nm_f_200mm"
+    
     
     image = Image.open("outs/Nanochisel/FZP_" + name + ".bmp")
     phase = np.asarray(image)[:,:,0]
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     
     distance = 2 * params.distance
-    distances = np.arange(1, distance, 1)
+    distances = np.arange(1, distance, 5)
     kernels_number = len(distances)
 
     scale = round(distance / params.matrix_size / params.pixel_size)
