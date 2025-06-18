@@ -26,9 +26,9 @@ if __name__ == "__main__":
 
     # Choose proper propagation parameters
     params.beam_diameter = 30
-    params.matrix_size = 256
+    params.matrix_size = 128
     params.pixel_size = 0.9
-    freq = 300
+    freq = 96
     params.wavelength = params.get_wavelength_from_frequency(freq)
     params.focal_length = 200
     params.distance = params.focal_length

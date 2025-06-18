@@ -12,6 +12,7 @@ dist/
 *.jpg
 *.txt
 *.stl
+*.svg
 
 #environments and IDE configs
 env/
