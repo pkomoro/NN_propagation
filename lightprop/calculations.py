@@ -2,6 +2,14 @@ import numpy as np
 
 from lightprop.propagation.params import PropagationParams
 
+def Fresnel_reflection(n1, n2, theta, S_polarization: bool):
+    Rs = np.abs((n1 * np.cos(theta) - n2 * np.sqrt(1 - (n1 / n2 * np.sin(theta))**2)) / (n1 * np.cos(theta) + n2 * np.sqrt(1 - (n1 / n2 * np.sin(theta))**2)))**2
+    Rp = np.abs((n1 * np.sqrt(1 - (n1 / n2 * np.sin(theta))**2) - n2 * np.cos(theta)) / (n1 * np.sqrt(1 - (n1 / n2 * np.sin(theta))**2) + n2 * np.cos(theta)))**2
+    if S_polarization == True:
+        return Rs
+    else:
+        return Rp
+
 
 # impulse response function in the on-axis approximation
 def h(r, distance, wavelength):
@@ -31,7 +39,9 @@ def gaussian(r, variance):
 
 
 def lens(r, focal_length, wavelength):
-    return (-2 * np.pi) / wavelength * np.sqrt(r**2 + focal_length**2)
+    phase = (-2 * np.pi) / wavelength * np.sqrt(r**2 + focal_length**2)
+    phase_center = (-2 * np.pi) / wavelength * np.sqrt(focal_length**2)
+    return phase - phase_center - 0.000001
 
 def FZP_phase(r, rs):
     counter = 0
